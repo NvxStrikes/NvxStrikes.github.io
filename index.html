@@ -107,15 +107,49 @@
     overflow: hidden;
   }
 
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('HeaderImage.png');
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+  }
+
+  .hero-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      rgba(8,8,16,0.93) 0%,
+      rgba(8,8,16,0.82) 45%,
+      rgba(20,10,45,0.70) 75%,
+      rgba(8,8,16,0.55) 100%
+    );
+  }
+
+  .hero-credit {
+    position: absolute;
+    bottom: 20px;
+    right: 28px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.22);
+    font-style: italic;
+    z-index: 2;
+    letter-spacing: 0.5px;
+  }
+
   .hero-glow {
     position: absolute;
     width: 700px;
     height: 700px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(124,92,252,0.18) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(124,92,252,0.12) 0%, transparent 70%);
     top: -100px;
     right: -100px;
     pointer-events: none;
+    z-index: 1;
   }
 
   .hero-glow2 {
@@ -123,10 +157,11 @@
     width: 400px;
     height: 400px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(192,132,252,0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(192,132,252,0.07) 0%, transparent 70%);
     bottom: 0;
     left: 200px;
     pointer-events: none;
+    z-index: 1;
   }
 
   .hero-content {
@@ -599,6 +634,7 @@
 
 <!-- HERO -->
 <section class="hero">
+  <div class="hero-bg"></div>
   <div class="hero-glow"></div>
   <div class="hero-glow2"></div>
   <div class="hero-content">
@@ -630,6 +666,7 @@
       </div>
     </div>
   </div>
+  <div class="hero-credit">Rendered in Blender · Enhanced with AI</div>
 </section>
 
 <!-- PRODUCTS -->
@@ -655,7 +692,7 @@
       </ul>
       <div class="product-footer">
         <div class="product-price">
-          $6.99
+          $4.54
           <small>Basic · Studio · Premium tiers</small>
         </div>
         <a href="https://superhivemarket.com/products/autosave-pro" target="_blank" class="btn-card">
