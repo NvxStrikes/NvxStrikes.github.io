@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaStrikes — Blender Addons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #080810;
+    --bg2:      #0e0e1a;
+    --bg3:      #13132  4;
+    --purple:   #7c5cfc;
+    --purple2:  #9d7fff;
+    --purple3:  #5a3fd4;
+    --accent:   #c084fc;
+    --text:     #f0eeff;
+    --muted:    #8880aa;
+    --border:   rgba(124,92,252,0.18);
+    --card:     rgba(124,92,252,0.06);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 60px;
+    background: rgba(8,8,16,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.5px;
+  }
+
+  .nav-logo span { color: var(--purple2); }
+
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-cta {
+    background: var(--purple);
+    color: #fff !important;
+    padding: 9px 22px;
+    border-radius: 8px;
+    font-weight: 500 !important;
+    transition: background 0.2s !important;
+  }
+
+  .nav-cta:hover { background: var(--purple2) !important; color: #fff !important; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 60px 80px;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,92,252,0.18) 0%, transparent 70%);
+    top: -100px;
+    right: -100px;
+    pointer-events: none;
+  }
+
+  .hero-glow2 {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(192,132,252,0.1) 0%, transparent 70%);
+    bottom: 0;
+    left: 200px;
+    pointer-events: none;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,92,252,0.12);
+    border: 1px solid rgba(124,92,252,0.3);
+    color: var(--purple2);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--purple2);
+    animation: pulse 2s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.4); }
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(42px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -2px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--purple2), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 480px;
+    margin-bottom: 40px;
+    font-weight: 300;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--purple);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 14px 28px;
+    border-radius: 10px;
+    transition: all 0.2s;
+    box-shadow: 0 0 32px rgba(124,92,252,0.35);
+  }
+
+  .btn-primary:hover {
+    background: var(--purple2);
+    transform: translateY(-2px);
+    box-shadow: 0 0 48px rgba(124,92,252,0.5);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    padding: 14px 28px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: rgba(124,92,252,0.5);
+    background: var(--card);
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 48px;
+    margin-top: 64px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-num span { color: var(--purple2); }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ── SECTION SHARED ── */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 100px 60px;
+  }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--purple2);
+    margin-bottom: 16px;
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    font-size: 17px;
+    max-width: 500px;
+    font-weight: 300;
+    margin-bottom: 60px;
+  }
+
+  /* ── PRODUCTS ── */
+  #products { background: var(--bg2); }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+  }
+
+  .product-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .product-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(124,92,252,0.08) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .product-card:hover { border-color: rgba(124,92,252,0.45); transform: translateY(-4px); }
+  .product-card:hover::before { opacity: 1; }
+
+  .product-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+
+  .tag-pro { background: rgba(124,92,252,0.15); color: var(--purple2); border: 1px solid rgba(124,92,252,0.3); }
+  .tag-free { background: rgba(52,211,153,0.1); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.25); }
+  .tag-new { background: rgba(251,146,60,0.1); color: #fdba74; border: 1px solid rgba(251,146,60,0.25); }
+
+  .product-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+  }
+
+  .product-card p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .product-features {
+    list-style: none;
+    margin-bottom: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .product-features li {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .product-features li::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--purple2);
+    flex-shrink: 0;
+  }
+
+  .product-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .product-price {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .product-price small {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+    font-family: 'DM Sans', sans-serif;
+    display: block;
+    line-height: 1;
+  }
+
+  .btn-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--purple);
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .btn-card:hover { background: var(--purple2); transform: translateY(-1px); }
+
+  .btn-card-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .btn-card-ghost:hover { border-color: rgba(124,92,252,0.5); background: var(--card); }
+
+  /* ── ABOUT ── */
+  #about {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .about-visual {
+    position: relative;
+  }
+
+  .about-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+  }
+
+  .about-box-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--purple2);
+    margin-bottom: 20px;
+  }
+
+  .skill-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .skill-name { font-size: 13px; color: var(--muted); }
+
+  .skill-bar {
+    width: 160px;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .skill-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, var(--purple3), var(--purple2));
+  }
+
+  .about-text h2 { margin-bottom: 20px; }
+
+  .about-text p {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 16px;
+    font-weight: 300;
+  }
+
+  .about-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 28px;
+  }
+
+  .chip {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    padding: 5px 14px;
+    border-radius: 100px;
+  }
+
+  /* ── CONTACT ── */
+  #contact { background: var(--bg2); text-align: center; }
+
+  #contact h2 { margin: 0 auto 16px; }
+  #contact .section-sub { margin: 0 auto 48px; }
+
+  .contact-links {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 24px;
+    border-radius: 10px;
+    transition: all 0.2s;
+  }
+
+  .contact-link:hover {
+    border-color: rgba(124,92,252,0.5);
+    background: rgba(124,92,252,0.1);
+    transform: translateY(-2px);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 32px 60px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+  }
+
+  footer p { font-size: 13px; color: var(--muted); }
+
+  footer a { color: var(--purple2); text-decoration: none; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 24px 60px; }
+    section { padding: 70px 24px; }
+    #about { grid-template-columns: 1fr; gap: 40px; }
+    .hero-stats { gap: 28px; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Nova<span>Strikes</span></a>
+  <ul class="nav-links">
+    <li><a href="#products">Products</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="https://superhivemarket.com/products/autosave-pro" target="_blank" class="nav-cta">Get Pro →</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-content">
+    <div class="hero-badge">Blender 4.4 – 5.0+ Ready</div>
+    <h1>Professional<br>Blender <em>Addons</em><br>That Work.</h1>
+    <p class="hero-sub">Tools built for real Blender artists. No bloat, no fluff — just reliable addons that protect your work and streamline your workflow.</p>
+    <div class="hero-actions">
+      <a href="https://superhivemarket.com/products/autosave-pro" target="_blank" class="btn-primary">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Get Autosave+ Pro
+      </a>
+      <a href="https://github.com/NvxStrikes/smart-autosave-lite" target="_blank" class="btn-secondary">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        Free Lite Version
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">25<span>+</span></div>
+        <div class="stat-label">Copies Sold</div>
+      </div>
+      <div>
+        <div class="stat-num">5<span>.0★</span></div>
+        <div class="stat-label">Average Rating</div>
+      </div>
+      <div>
+        <div class="stat-num">17<span>+</span></div>
+        <div class="stat-label">Lite Downloads</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="reveal">
+    <div class="section-label">Products</div>
+    <h2>Built for Blender Artists</h2>
+    <p class="section-sub">Every addon is maintained, updated, and built around one goal — making your workflow bulletproof.</p>
+  </div>
+  <div class="products-grid">
+
+    <div class="product-card reveal">
+      <span class="product-tag tag-pro">⭐ Best Seller</span>
+      <h3>Smart AutoSave+ Pro</h3>
+      <p>Never lose Blender work again. Named Checkpoints, Visual Timeline, Crash Recovery, Smart Triggers and more — all running silently in the background.</p>
+      <ul class="product-features">
+        <li>Named Checkpoints — permanently protected saves</li>
+        <li>Visual Timeline Browser with thumbnails</li>
+        <li>Crash Recovery Dialog on file load</li>
+        <li>Smart triggers — FPS, Memory, Object count</li>
+        <li>Backup Health Report & Export Log</li>
+        <li>Blender 4.4 – 5.0+ compatible</li>
+      </ul>
+      <div class="product-footer">
+        <div class="product-price">
+          $4.54
+          <small>Basic · Studio · Premium tiers</small>
+        </div>
+        <a href="https://superhivemarket.com/products/autosave-pro" target="_blank" class="btn-card">
+          Get Now →
+        </a>
+      </div>
+    </div>
+
+    <div class="product-card reveal">
+      <span class="product-tag tag-free">Free</span>
+      <h3>Smart AutoSave+ Lite</h3>
+      <p>The free entry point to the AutoSave+ ecosystem. Core autosave engine, up to 3 backups, force save button — no payment needed.</p>
+      <ul class="product-features">
+        <li>Auto-save on custom interval</li>
+        <li>Force save backup instantly</li>
+        <li>Keeps last 3 backups automatically</li>
+        <li>Works on Windows, Mac & Linux</li>
+        <li>Upgrade banner to Pro built-in</li>
+      </ul>
+      <div class="product-footer">
+        <div class="product-price">
+          Free
+          <small>Open source · GPL v3</small>
+        </div>
+        <a href="https://github.com/NvxStrikes/smart-autosave-lite" target="_blank" class="btn-card btn-card-ghost">
+          Download →
+        </a>
+      </div>
+    </div>
+
+    <div class="product-card reveal">
+      <span class="product-tag tag-new">New</span>
+      <h3>One-Click Safe Export Pro</h3>
+      <p>Pack, protect, and export your entire Blender project in one click. Asset packing, workflow protection, and clean delivery — sorted.</p>
+      <ul class="product-features">
+        <li>One-click project export & packing</li>
+        <li>Asset protection & workflow lock</li>
+        <li>Clean delivery-ready output</li>
+        <li>Blender 4.4 – 5.0+ compatible</li>
+      </ul>
+      <div class="product-footer">
+        <div class="product-price">
+          $3.99
+          <small>One-time · Lifetime updates</small>
+        </div>
+        <a href="https://superhivemarket.com/products/one-click-safe-export-pro" target="_blank" class="btn-card">
+          Get Now →
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-text reveal">
+    <div class="section-label">About</div>
+    <h2>One developer.<br>Real tools.</h2>
+    <p>NovaStrikes is a solo addon studio built by a university student who got tired of losing Blender work to crashes. Every product is built from genuine frustration with missing workflow tools.</p>
+    <p>No team. No agency. Just addons that actually solve real problems — maintained, updated, and supported by the same person who built them.</p>
+    <div class="about-chips">
+      <span class="chip">Blender Addons</span>
+      <span class="chip">Python</span>
+      <span class="chip">Blender 5.0+</span>
+      <span class="chip">Solo Dev</span>
+      <span class="chip">Regular Updates</span>
+    </div>
+  </div>
+  <div class="about-visual reveal">
+    <div class="about-box">
+      <div class="about-box-title">Stack & Skills</div>
+      <div class="skill-row">
+        <span class="skill-name">Blender Python API</span>
+        <div class="skill-bar"><div class="skill-fill" style="width:88%"></div></div>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Addon Architecture</span>
+        <div class="skill-bar"><div class="skill-fill" style="width:82%"></div></div>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">UI/UX Design</span>
+        <div class="skill-bar"><div class="skill-fill" style="width:74%"></div></div>
+      </div>
+      <div class="skill-row">
+        <span class="skill-name">Product Strategy</span>
+        <div class="skill-bar"><div class="skill-fill" style="width:78%"></div></div>
+      </div>
+      <div style="margin-top:28px;padding-top:24px;border-top:1px solid var(--border)">
+        <div class="about-box-title" style="margin-bottom:12px">Currently</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6">Maintaining Autosave+ Pro v8.0.0 · Building new addons · University student in Pakistan 🇵🇰</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="reveal">
+    <div class="section-label">Contact</div>
+    <h2>Let's work together</h2>
+    <p class="section-sub">Questions about an addon? Custom work? Just want to say hi? I'm always around.</p>
+    <div class="contact-links">
+      <a href="mailto:hamayl.shahbaz16@gmail.com" class="contact-link">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        Email Me
+      </a>
+      <a href="https://superhivemarket.com/profile/novastrikes" target="_blank" class="contact-link">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        Superhive Store
+      </a>
+      <a href="https://github.com/NvxStrikes" target="_blank" class="contact-link">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 <a href="#">NovaStrikes</a> · Lahore, Pakistan 🇵🇰</p>
+  <p>Built with 🤍 · Powered by <a href="https://pages.github.com" target="_blank">GitHub Pages</a></p>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
